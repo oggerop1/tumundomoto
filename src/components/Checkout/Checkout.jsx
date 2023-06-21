@@ -20,19 +20,19 @@ const Checkout = () => {
     const manejadorFormulario = (event) => {
         event.preventDefault();
 
-        //Verificamos que los campos esten completos:
+       
         if(!nombre || !apellido || !telefono || !email || !emailConfirmacion) {
             setError("Por favor complete todos los campos"); 
             return;
         }
 
-        //Validamos que los campos del email coincidan 
+        
         if(email !== emailConfirmacion) {
             setError("Los campos del email no coinciden");
             return;
         }
 
-        //Paso 1: Creamos el objeto de la orden: 
+      
 
         const orden = {
             items: carrito.map(producto => ({
@@ -48,23 +48,23 @@ const Checkout = () => {
             fecha: new Date(),
         };
 
-        //Vamos a modificar el código para que ejecute varias promesas en paralelo, por un lado que actualice el stock de productos y por otro que genere una orden de compras. Promise.All me permite esto: 
+       
 
         Promise.all(
             orden.items.map(async (productoOrden) => {
-                //Por cada producto en la colección inventario obtengo una referencia, y a partir de esa referencia obtengo el doc. 
+                
                 const productoRef = doc(db, "inventario", productoOrden.id);
                 const productoDoc = await getDoc(productoRef);
                 const stockActual = productoDoc.data().stock;
-                //Data es un método qu eme permite acceder a la información del Documento. 
+                
                 await updateDoc(productoRef, {
                     stock: stockActual - productoOrden.cantidad,
                 });
-                //Modifico el stock y subo la información actualizada. 
+                
             })
         )
             .then(() => {
-                //Guardan la orden de compra en la base de datos: 
+                
                 addDoc(collection(db, "ordenes"), orden)
                     .then((docRef) => {
                         setOrdenId(docRef.id);
